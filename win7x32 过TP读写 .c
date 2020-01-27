@@ -1,3 +1,7 @@
+/*
+有很多硬编码,每个系统都不一样.比如需要自己用IDA分析内核文件和NTDLL.DLL找到服务ID
+*/
+
 #include"driver.h"
 typedef struct _SERVICE_DESCIPTOR_TABLE
 {
