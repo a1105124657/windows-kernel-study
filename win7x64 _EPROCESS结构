@@ -5,7 +5,7 @@ nt!_EPROCESS
    +0x168 CreateTime       : _LARGE_INTEGER
    +0x170 ExitTime         : _LARGE_INTEGER
    +0x178 RundownProtect   : _EX_RUNDOWN_REF
-   +0x180 UniqueProcessId  : Ptr64 Void
+   +0x180 UniqueProcessId  : Ptr64 Void    //进程ID
    +0x188 ActiveProcessLinks : _LIST_ENTRY
    +0x198 ProcessQuotaUsage : [2] Uint8B
    +0x1a8 ProcessQuotaPeak : [2] Uint8B
@@ -49,7 +49,7 @@ nt!_EPROCESS
    +0x2d0 PageDirectoryPte : _HARDWARE_PTE
    +0x2d0 Filler           : Uint8B
    +0x2d8 Session          : Ptr64 Void
-   +0x2e0 ImageFileName    : [15] UChar
+   +0x2e0 ImageFileName    : [15] UChar  //进程名
    +0x2ef PriorityClass    : UChar
    +0x2f0 JobLinks         : _LIST_ENTRY
    +0x300 LockedPagesList  : Ptr64 Void
@@ -71,7 +71,7 @@ nt!_EPROCESS
    +0x378 CommitChargeLimit : Uint8B
    +0x380 CommitChargePeak : Uint8B
    +0x388 AweInfo          : Ptr64 Void
-   +0x390 SeAuditProcessCreationInfo : _SE_AUDIT_PROCESS_CREATION_INFO
+   +0x390 SeAuditProcessCreationInfo : _SE_AUDIT_PROCESS_CREATION_INFO  //一个结构体，里面放了一个指针，指针指向该exe的路径
    +0x398 Vm               : _MMSUPPORT
    +0x420 MmProcessLinks   : _LIST_ENTRY
    +0x430 HighestUserAddress : Ptr64 Void
