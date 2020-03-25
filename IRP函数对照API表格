@@ -1,0 +1,13 @@
+IRP_MJ_CREATE	                          请求一个句柄	                    CreateFile
+IRP_MJ_CLEANUP	                        在关闭句柄时取消悬挂的IRP	        CloseHandle
+IRP_MJ_CLOSE	                          关闭句柄	                        CloseHandle
+IRP_MJ_READ	                            从设备得到数据	                    ReadFile
+IRP_MJ_WRITE	                          传送数据到设备	                    WriteFile
+IRP_MJ_DEVICE_CONTROL	                  控制操作（利用IOCTL宏）	          DeviceIoControl
+RP_MJ_INTERNAL_DEVICE_CONTROL	          控制操作(只能被内核调用)	           N/A
+IRP_MJ_QUERY_INFORMATION	              得到文件的长度	                    GetFileSize
+IRP_MJ_SET_INFORMATION	                设置文件的长度	                    SetFileSize
+IRP_MJ_FLUSH_BUFFERS	                  写输出缓冲区或者丢弃输入缓冲区	      FlushFileBuffers
+
+
+https://blog.csdn.net/WuLex/article/details/82220847 讲IRP比较好的网址
