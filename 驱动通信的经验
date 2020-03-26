@@ -1,0 +1,10 @@
+传递数据的结构体类似
+typedef struct _READ_WRITE_INFO
+{
+    INT uPid;
+    INT Dst;
+    INT uSize; 
+}READ_WRITE_INFO, * PREAD_WRITE_INFO;
+为避免结构体对齐等问题
+
+驱动的编译位数要与ring3 exe调用的编译位数相同，都为x32或都为x64
