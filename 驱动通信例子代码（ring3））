@@ -1,0 +1,50 @@
+#include<windows.h>
+#include<stdio.h>
+#define DEVICE_LINK_NAME    L"\\\\.\\BufferedIODevcieLinkName"
+
+#define CTL_SYS \
+    CTL_CODE(FILE_DEVICE_UNKNOWN,0x804,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
+typedef struct _READ_WRITE_INFO
+{
+    INT uPid;
+    INT Dst;
+    INT uSize; 
+}READ_WRITE_INFO, * PREAD_WRITE_INFO;
+
+int main()
+{
+    printf("%u", sizeof(READ_WRITE_INFO));
+    HANDLE DeviceHandle = CreateFile(DEVICE_LINK_NAME,
+        GENERIC_WRITE | GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (DeviceHandle == INVALID_HANDLE_VALUE)
+    {
+        return 0;
+    }
+    char BufferData[2] = { 0 };
+    READ_WRITE_INFO data;
+    scanf("%d", &data.uPid);
+    data.Dst = 0x400000;
+    data.uSize = 2;
+    DWORD ReturnLength = 0;
+    BOOL IsOk = DeviceIoControl(DeviceHandle, CTL_SYS,
+        &data,
+        sizeof(data),
+        (LPVOID)BufferData,
+        12,
+        &ReturnLength,
+        NULL);
+    printf("%d\n", ReturnLength);
+    printf("%x", BufferData[0]);
+    printf("%x", BufferData[1]);
+    getchar();
+    system("pause");
+    return 0;
+}
+
+
+
+
+
+
+
