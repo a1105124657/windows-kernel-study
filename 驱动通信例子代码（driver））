@@ -1,0 +1,140 @@
+
+#include<ntifs.h>
+#include<windef.h>
+
+
+#define IOCTL_TEST CTL_CODE (FILE_DEVICE_UNKNOWN,0x804,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
+#define DEVICE_OBJECT_NAME  L"\\Device\\BufferedIODeviceObjectName"
+#define DEVICE_LINK_NAME    L"\\DosDevices\\BufferedIODevcieLinkName"
+
+
+
+VOID DriverUnload(IN PDRIVER_OBJECT pDriverObj);
+NTSTATUS
+DispatchCreate(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp);
+NTSTATUS
+DispatchClose(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp);
+NTSTATUS
+DispatchDeviceControl(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp);
+
+
+typedef struct _READ_WRITE_INFO
+{
+	INT uPid;
+	INT Dst;
+	INT uSize;
+}READ_WRITE_INFO,*PREAD_WRITE_INFO;
+
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObj, IN PUNICODE_STRING pRegistryString)
+{
+	pDriverObj->DriverUnload = DriverUnload;
+
+	UNICODE_STRING  DeviceLinkName;
+	UNICODE_STRING  DeviceObjectName;
+	PDEVICE_OBJECT  pDevObj;
+
+
+	pDriverObj->MajorFunction[IRP_MJ_CREATE] = DispatchCreate;//CreateFile
+	pDriverObj->MajorFunction[IRP_MJ_CLOSE] = DispatchClose;
+	pDriverObj->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DispatchDeviceControl;
+
+	RtlInitUnicodeString(&DeviceObjectName, DEVICE_OBJECT_NAME);
+	NTSTATUS Status = IoCreateDevice(pDriverObj, NULL,
+		&DeviceObjectName,
+		FILE_DEVICE_UNKNOWN,
+		0, FALSE,
+		&pDriverObj);
+	if (!NT_SUCCESS(Status))
+	{
+		return Status;
+	}
+	RtlInitUnicodeString(&DeviceLinkName, DEVICE_LINK_NAME);
+	Status = IoCreateSymbolicLink(&DeviceLinkName, &DeviceObjectName);
+
+	if (!NT_SUCCESS(Status))
+	{
+		IoDeleteDevice(pDriverObj);
+		return Status;
+	}
+	DbgPrint("Hello:DriverEntry Success\r\n");
+	return STATUS_SUCCESS;
+}
+
+VOID
+DriverUnload(IN PDRIVER_OBJECT pDriverObj)
+{
+
+	DbgPrint("Hello:Unloaded Success\r\n");
+	return;
+}
+NTSTATUS
+DispatchCreate(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
+{
+	DbgPrint("调用了CreateFile");
+	pIrp->IoStatus.Status = STATUS_SUCCESS;
+	pIrp->IoStatus.Information = 0;
+	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+	return STATUS_SUCCESS;
+}
+NTSTATUS
+DispatchClose(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
+{
+	DbgPrint("调用了CloseHandle");
+	pIrp->IoStatus.Status = STATUS_SUCCESS;
+	pIrp->IoStatus.Information = 0;
+	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+	return STATUS_SUCCESS;
+}
+NTSTATUS
+DispatchDeviceControl(IN PDEVICE_OBJECT pDevObj, IN PIRP pIrp)
+{
+	//NTSTATUS status               = STATUS_SUCCESS;
+	DbgPrint("调用了DeviceIoControl");
+	PIO_STACK_LOCATION pIrpStack = IoGetCurrentIrpStackLocation(pIrp);
+	ULONG uIoControlCode = pIrpStack->Parameters.DeviceIoControl.IoControlCode;
+	PVOID pIoBuffer = pIrp->AssociatedIrp.SystemBuffer;
+	ULONG uInSize = pIrpStack->Parameters.DeviceIoControl.InputBufferLength;
+	pIrp->IoStatus.Information = pIrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+	PEPROCESS pEprocess = NULL;
+	KAPC_STATE apc_state = { 0 };
+	DbgPrint("%d%p%d", ((PREAD_WRITE_INFO)pIoBuffer)->uPid, ((PREAD_WRITE_INFO)pIoBuffer)->Dst, ((PREAD_WRITE_INFO)pIoBuffer)->uSize);
+	switch (uIoControlCode)
+	{
+	case IOCTL_TEST:
+	{
+		DbgPrint("%p%d", ((PREAD_WRITE_INFO)pIoBuffer)->Dst, ((PREAD_WRITE_INFO)pIoBuffer)->uSize);
+		if (NT_SUCCESS(PsLookupProcessByProcessId((HANDLE)((PREAD_WRITE_INFO)pIoBuffer)->uPid, &pEprocess)))
+		{
+			KeStackAttachProcess((PRKPROCESS)pEprocess, &apc_state);
+			__try
+			{
+				if (MmIsAddressValid((PVOID)((PREAD_WRITE_INFO)pIoBuffer)->Dst))
+				{
+					RtlCopyMemory(pIoBuffer, (PVOID)((PREAD_WRITE_INFO)pIoBuffer)->Dst, ((PREAD_WRITE_INFO)pIoBuffer)->uSize);
+					DbgPrint("%p%d",((PREAD_WRITE_INFO)pIoBuffer)->Dst, ((PREAD_WRITE_INFO)pIoBuffer)->uSize);
+				}
+				else
+				{
+					RtlZeroMemory(pIoBuffer, uInSize);
+				}
+				KeUnstackDetachProcess(&apc_state);
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				KeUnstackDetachProcess(&apc_state);
+				DbgPrint("Hello:IOCTL_HELLO_Read __except\r\n");
+			}
+		}
+		else
+		{
+			RtlZeroMemory(pIoBuffer, uInSize);
+		}
+		break;
+	}
+		}
+	pIrp->IoStatus.Status = STATUS_SUCCESS;
+	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+	DbgPrint("TEST测试完毕");
+	return STATUS_SUCCESS;
+}
