@@ -21,5 +21,4 @@ void __declspec(naked) GetRegister()
 		int 3 
 		retf
 	}
-	cout << "调用门运行完毕";
 }
