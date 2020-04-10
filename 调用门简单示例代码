@@ -1,0 +1,25 @@
+#include<iostream>
+#include<windows.h>
+using namespace std;
+
+int main()
+{
+	char buff[6];
+	*(DWORD*)&buff[0]=0x1345678;
+	*(WORD*)&buff[4]=0x48;
+	_asm
+	{
+		call fword ptr[buff]
+	}
+	getchar();
+	return 0;
+}
+void __declspec(naked) GetRegister()
+{
+	_asm
+	{
+		int 3 
+		cout << "调用门运行完毕"
+		retf
+	}
+}
