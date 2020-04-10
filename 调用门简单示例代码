@@ -19,7 +19,7 @@ void __declspec(naked) GetRegister()
 	_asm
 	{
 		int 3 
-		cout << "调用门运行完毕"
 		retf
 	}
+	cout << "调用门运行完毕";
 }
