@@ -1,4 +1,0 @@
-1.启动页面就要打开windbg
-2.第一个断电打开要调试的驱动的源文件（open source file）和pdb（symbol file中加路径） 
-3.下驱动断点 bu Driver!DriverEntry
-4.加载驱动 F10单步跟踪
