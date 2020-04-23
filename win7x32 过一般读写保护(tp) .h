@@ -27,7 +27,7 @@ void PageProOff()//去除页面保护
 {
 	_asm
 	{
-		cli;
+		cli
 		push    eax
 		mov        eax, cr0
 		and eax,   not 0x10000
@@ -44,7 +44,7 @@ void PageProOn()
 		or eax, 0x10000
 		mov        cr0, eax
 		pop        eax
-		sti;
+		sti
 	}
 }
 void Sleep(ULONG n)
